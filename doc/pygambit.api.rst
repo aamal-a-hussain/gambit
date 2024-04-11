@@ -296,6 +296,9 @@ Computation of quantal response equilibria
 .. autosummary::
    :toctree: api/
 
-   fit_empirical
-   fit_fixedpoint
+   fit_strategy_empirical
+   fit_strategy_fixedpoint
    LogitQREMixedStrategyFitResult
+
+   fit_behavior_fixedpoint
+   LogitQREMixedBehaviorFitResult
