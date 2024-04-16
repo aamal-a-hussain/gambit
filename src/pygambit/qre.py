@@ -510,6 +510,8 @@ def fit_behavior_fixedpoint(
     See Also
     --------
     fit_strategy_fixedpoint : Estimate QRE using the strategic representation
+    fit_behavior_empirical : Estimate QRE by approximation of the correspondence
+                             using independent decision problems.
 
     References
     ----------
@@ -520,4 +522,54 @@ def fit_behavior_fixedpoint(
     res = libgbt._logit_behavior_estimate(data)
     return LogitQREMixedBehaviorFitResult(
         data, "fixedpoint", res.lam, res.profile, res.log_like
+    )
+
+
+def fit_behavior_empirical(
+        data: libgbt.MixedBehaviorProfileDouble
+) -> LogitQREMixedBehaviorFitResult:
+    """Use maximum likelihood estimation to estimate a quantal
+    response equilibrium using the empirical payoff method.
+    The empirical payoff method operates by ignoring the fixed-point
+    considerations of the QRE and approximates instead by a collection
+    of independent decision problems. [1]_
+
+    Returns
+    -------
+    LogitQREMixedBehaviorFitResult
+        The result of the estimation represented as a
+        ``LogitQREMixedBehaviorFitResult`` object.
+
+    See Also
+    --------
+    fit_behavior_fixedpoint : Estimate QRE precisely by computing the correspondence
+
+    References
+    ----------
+    .. [1] Bland, J. R. and Turocy, T. L., 2023.  Quantal response equilibrium
+        as a structural model for estimation: The missing manual.
+        SSRN working paper 4425515.
+    """
+    def do_logit(lam: float):
+        logit_probs = [[math.exp(lam*a) for a in infoset]
+                       for player in values for infoset in player]
+        sums = [sum(v) for v in logit_probs]
+        logit_probs = [[v/s for v in vv]
+                       for (vv, s) in zip(logit_probs, sums)]
+        logit_probs = [v for infoset in logit_probs for v in infoset]
+        return [max(v, 1.0e-293) for v in logit_probs]
+
+    def log_like(lam: float) -> float:
+        logit_probs = do_logit(lam)
+        return sum([f*math.log(p) for (f, p) in zip(list(flattened_data), logit_probs)])
+
+    flattened_data = [data[a] for p in data.game.players for s in p.infosets for a in s.actions]
+    normalized = data.normalize()
+    values = [[[normalized.action_value(a) for a in s.actions]
+               for s in p.infosets]
+              for p in data.game.players]
+    res = scipy.optimize.minimize(lambda x: -log_like(x[0]), (0.1,),
+                                  bounds=((0.0, None),))
+    return LogitQREMixedBehaviorFitResult(
+        data, "empirical", res.x[0], do_logit(res.x[0]), -res.fun
     )
