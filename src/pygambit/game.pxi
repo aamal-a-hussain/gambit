@@ -323,6 +323,7 @@ class Game:
         See Also
         --------
         from_dict : Create strategic game and set player labels
+        to_arrays : Return the payoff matrices from a strategic form game
         """
         g = cython.declare(Game)
         arrays = [np.array(a) for a in arrays]
@@ -362,6 +363,7 @@ class Game:
         See Also
         --------
         from_arrays : Create game from list-like of array-like
+        to_arrays : Return the payoff matrices from a strategic form game
         """
         g = cython.declare(Game)
         payoffs = {k: np.array(v) for k, v in payoffs.items()}
@@ -1037,6 +1039,11 @@ class Game:
           chooser; the second player the column chooser.  For games with
           more than two players, a collection of tables is generated,
           one for each possible strategy combination of players 3 and higher.
+
+        See Also
+        --------
+        to_arrays :
+            Return list-like of array-likes, the payoff matrices of a strategic form game
         """
         if format == "gte":
             return pygambit.gte.write_game(self)
