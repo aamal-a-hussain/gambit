@@ -988,7 +988,7 @@ class Game:
             shape = tuple(len(player.strategies) for player in self.players)
         except RuntimeError as err:
             raise ValueError(
-                "No players and/or strategies have been initialised in the Game"
+                "No players and/or strategies have been initialised in the game"
                 ) from err
 
         if self.is_tree:
