@@ -448,7 +448,7 @@ class Game:
         if self.title:
             return f"Game(title='{self.title}')"
         else:
-            return f"Game(id={hash(self)}"
+            return f"Game(id={hash(self)})"
 
     def _repr_html_(self):
         if self.is_tree:
@@ -743,19 +743,18 @@ class Game:
             )
             return self._fill_strategy_profile(mspd, data, float)
 
-    def to_arrays(self):
+    def to_arrays(self) -> typing.List[np.ndarray]:
         if self.players is None:
             raise ValueError('Game has no players')
         shape = tuple(len(player.strategies) for player in self.players)
         print(shape)
         num_players = len(self.players)
         payoffs = [np.zeros(shape) for p in range(num_players)]
-        for i, profile in enumerate(itertools.product(*(range(s) for s in shape))):
+        for profile in itertools.product(*(range(s) for s in shape)):
             for array, player in zip(payoffs, self.players):
                 array[profile] = self[profile][player]
 
         return payoffs
-
 
     def random_strategy_profile(
             self,
