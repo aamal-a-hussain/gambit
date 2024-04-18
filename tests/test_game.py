@@ -5,6 +5,14 @@ import pytest
 from . import games
 
 
+def test_to_arrays():
+    m = np.array([[8, 2], [10, 5]])
+    game = gbt.Game.from_arrays(m, m.transpose())
+    a, b = game.to_arrays()
+
+    assert np.all(a == m)
+    assert np.all(b == m.T)
+
 def test_from_arrays():
     m = np.array([[8, 2], [10, 5]])
     game = gbt.Game.from_arrays(m, m.transpose())
