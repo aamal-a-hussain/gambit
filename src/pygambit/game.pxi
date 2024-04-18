@@ -743,28 +743,6 @@ class Game:
             )
             return self._fill_strategy_profile(mspd, data, float)
 
-    def to_arrays(self) -> typing.List[np.ndarray]:
-
-        try:
-            shape = tuple(len(player.strategies) for player in self.players)
-        except RuntimeError as err:
-            raise ValueError(
-                "No players and/or strategies have been initialised in the Game"
-                ) from err
-
-        if self.is_tree:
-            raise UndefinedOperationError(
-                "Operation only defined for games with a strategic representation"
-                )
-
-        num_players = len(self.players)
-        payoffs = [np.zeros(shape) for p in range(num_players)]
-        for profile in itertools.product(*(range(s) for s in shape)):
-            for array, player in zip(payoffs, self.players):
-                array[profile] = self[profile][player]
-
-        return payoffs
-
     def random_strategy_profile(
             self,
             denom: int = None,
@@ -973,6 +951,56 @@ class Game:
             [resolved_node] +
             [n for child in resolved_node.children for n in self.nodes(child)]
         )
+
+    def to_arrays(self) -> typing.List[np.ndarray]:
+        """ Return the list of payoff matrices from a Game in strategic representation
+
+        The i'th element in the list corresponds to the payoff matrix of
+        player i in the game. Each element of the matrix gives the payoff
+        for the player, given a joint strategy profile.
+
+        The game must be in strategic form representation and should have
+        at least one player and one strategy for each player initialised.
+        If the game is empty (i.e. len(game.outcomes == 0) or len(game.players == 0))
+        an empty list is returned.
+
+        Returns
+        -------
+        payoffs: list-like of array-like
+            The payoff matrices for each player in the strategic game
+
+        Raises
+        --------
+        UndefinedOperationError
+            If the game is in extensive form representation
+
+        ValueError
+            If no players have been initialised, or at least
+            one player has no initialised strategies
+
+        See Also
+        --------
+        from_arrays : create game from list-like of array-like
+        """
+        try:
+            shape = tuple(len(player.strategies) for player in self.players)
+        except RuntimeError as err:
+            raise ValueError(
+                "No players and/or strategies have been initialised in the Game"
+                ) from err
+
+        if self.is_tree:
+            raise UndefinedOperationError(
+                "Operation only defined for games with a strategic representation"
+                )
+
+        num_players = len(self.players)
+        payoffs = [np.zeros(shape) for p in range(num_players)]
+        for profile in itertools.product(*(range(s) for s in shape)):
+            for array, player in zip(payoffs, self.players):
+                array[profile] = self[profile][player]
+
+        return payoffs
 
     def write(self, format="native") -> str:
         """Produce a serialization of the game.
