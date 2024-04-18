@@ -311,6 +311,29 @@ Games stored in existing Gambit savefiles can be loaded using :meth:`.Game.read_
    cd ../../doc
 
 
+Accessing payoff matrices from a strategic game
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The most direct way to read the payoffs from a strategic game is via :py:meth:`.Game.to_arrays`.
+This function takes a strategic form games and outputs a list of length n, where
+n is the number of players in the game. Each element of the list is a `numpy` array
+which represents the payoffs the corresponding agent.
+
+As an example, suppose the :py:class:`.Game` `g` represents the prisoner's dilemma
+game from the previous section, which can be read from file. Its payoff matrices
+can be accessed through :py:meth:`.Game.to_arrays`.
+
+.. ipython:: python
+   :suppress:
+
+   cd ../contrib/games
+
+.. ipython:: python
+   import pygambit as gbt
+   g = gbt.Game.read_game("pd.nfg")
+   A, B = g.to_arrays()
+   A, B
+
 
 Computing Nash equilibria
 ~~~~~~~~~~~~~~~~~~~~~~~~~

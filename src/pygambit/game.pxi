@@ -323,6 +323,7 @@ class Game:
         See Also
         --------
         from_dict : Create strategic game and set player labels
+        to_arrays : Return the payoff matrices from a strategic form game
         """
         g = cython.declare(Game)
         arrays = [np.array(a) for a in arrays]
@@ -362,6 +363,7 @@ class Game:
         See Also
         --------
         from_arrays : Create game from list-like of array-like
+        to_arrays : Return the payoff matrices from a strategic form game
         """
         g = cython.declare(Game)
         payoffs = {k: np.array(v) for k, v in payoffs.items()}
@@ -448,7 +450,7 @@ class Game:
         if self.title:
             return f"Game(title='{self.title}')"
         else:
-            return f"Game(id={hash(self)}"
+            return f"Game(id={hash(self)})"
 
     def _repr_html_(self):
         if self.is_tree:
@@ -952,6 +954,56 @@ class Game:
             [n for child in resolved_node.children for n in self.nodes(child)]
         )
 
+    def to_arrays(self) -> typing.List[np.ndarray]:
+        """ Return the list of payoff matrices from a Game in strategic representation
+
+        The i'th element in the list corresponds to the payoff matrix of
+        player i in the game. Each element of the matrix gives the payoff
+        for the player, given a joint strategy profile.
+
+        The game must be in strategic form representation and should have
+        at least one player and one strategy for each player initialised.
+        If the game is empty (i.e. len(game.outcomes == 0) or len(game.players == 0))
+        an empty list is returned.
+
+        Returns
+        -------
+        payoffs: list-like of array-like
+            The payoff matrices for each player in the strategic game
+
+        Raises
+        --------
+        UndefinedOperationError
+            If the game is in extensive form representation
+
+        RuntimeError
+            If no players have been initialised, or at least
+            one player has no initialised strategies
+
+        See Also
+        --------
+        from_arrays : create game from list-like of array-like
+        """
+        try:
+            shape = tuple(len(player.strategies) for player in self.players)
+        except RuntimeError as err:
+            raise RuntimeError(
+                "No players and/or strategies have been initialised in the game"
+                ) from err
+
+        if self.is_tree:
+            raise UndefinedOperationError(
+                "Operation only defined for games with a strategic representation"
+                )
+
+        num_players = len(self.players)
+        payoffs = [np.zeros(shape) for p in range(num_players)]
+        for profile in itertools.product(*(range(s) for s in shape)):
+            for array, player in zip(payoffs, self.players):
+                array[profile] = self[profile][player]
+
+        return payoffs
+
     def write(self, format="native") -> str:
         """Produce a serialization of the game.
 
@@ -987,6 +1039,11 @@ class Game:
           chooser; the second player the column chooser.  For games with
           more than two players, a collection of tables is generated,
           one for each possible strategy combination of players 3 and higher.
+
+        See Also
+        --------
+        to_arrays :
+            Return list-like of array-likes, the payoff matrices of a strategic form game
         """
         if format == "gte":
             return pygambit.gte.write_game(self)

@@ -5,6 +5,59 @@ import pytest
 from . import games
 
 
+def test_mixed_outcome_to_array():
+    g = gbt.Game.new_table([2, 2])
+    g.outcomes[0][g.players[0]] = "1/4"
+    g.outcomes[0][g.players[1]] = 0.25
+    g.outcomes[1][g.players[0]] = 5
+    g.outcomes[1][g.players[1]] = 0.
+    g.outcomes[2][g.players[0]] = 0
+    g.outcomes[2][g.players[1]] = 5/1
+    g.outcomes[3][g.players[0]] = "3.14159265"
+    g.outcomes[3][g.players[1]] = 3
+
+    A, B = g.to_arrays()
+    A_true = np.array([[0.25, 0.], [5., 3.14159265]])
+    B_true = np.array([[0.25, 5.], [0., 3.]])
+
+    assert np.all(A_true == A)
+    assert np.all(B_true == B)
+
+
+def test_from_empty_array_to_array():
+    game = gbt.Game.from_arrays([])
+    a = game.to_arrays()
+    assert len(a) == 1
+    assert a[0].size == 0
+
+
+def test_empty_game_to_array():
+    game = gbt.Game.new_table([])
+    assert game.to_arrays() == []
+
+
+def test_uninitialised_game_to_array():
+    game = gbt.Game()
+    with pytest.raises(RuntimeError):
+        _ = game.to_arrays()
+
+
+def test_ext_form_to_arrays():
+    game = gbt.Game.new_tree()
+    with pytest.raises(ValueError):
+        _ = game.to_arrays()
+
+
+def test_from_arrays_to_arrays():
+    A = np.array([[1, 5], [0, 3]])
+    B = A.T
+    game = gbt.Game.from_arrays(A, B)
+    a, b = game.to_arrays()
+
+    assert np.all(a == A)
+    assert np.all(b == B)
+
+
 def test_from_arrays():
     m = np.array([[8, 2], [10, 5]])
     game = gbt.Game.from_arrays(m, m.transpose())

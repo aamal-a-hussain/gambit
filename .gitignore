@@ -36,3 +36,6 @@ missing
 gambit
 .python-version
 dist
+
+.env
+.venv

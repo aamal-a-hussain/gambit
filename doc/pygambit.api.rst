@@ -34,6 +34,7 @@ Creating, reading, and writing games
    Game.from_dict
    Game.read_game
    Game.parse_game
+   Game.to_arrays
    Game.write
 
 
