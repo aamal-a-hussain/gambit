@@ -744,10 +744,13 @@ class Game:
             return self._fill_strategy_profile(mspd, data, float)
 
     def to_arrays(self) -> typing.List[np.ndarray]:
-        if self.players is None:
-            raise ValueError('Game has no players')
+
+        if self.is_tree:
+            raise UndefinedOperationError(
+                "Operation only defined for games with a strategic representation"
+                )
+
         shape = tuple(len(player.strategies) for player in self.players)
-        print(shape)
         num_players = len(self.players)
         payoffs = [np.zeros(shape) for p in range(num_players)]
         for profile in itertools.product(*(range(s) for s in shape)):

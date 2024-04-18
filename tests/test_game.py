@@ -5,13 +5,21 @@ import pytest
 from . import games
 
 
-def test_to_arrays():
-    m = np.array([[8, 2], [10, 5]])
-    game = gbt.Game.from_arrays(m, m.transpose())
+def test_ext_form_to_arrays():
+    game = gbt.Game.new_tree()
+    with pytest.raises(ValueError):
+        _ = game.to_arrays()
+
+
+def test_from_arrays_to_arrays():
+    A = np.array([[1, 5], [0, 3]])
+    B = A.T
+    game = gbt.Game.from_arrays(A, B)
     a, b = game.to_arrays()
 
-    assert np.all(a == m)
-    assert np.all(b == m.T)
+    assert np.all(a == A)
+    assert np.all(b == B)
+
 
 def test_from_arrays():
     m = np.array([[8, 2], [10, 5]])
