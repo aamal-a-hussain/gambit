@@ -745,12 +745,18 @@ class Game:
 
     def to_arrays(self) -> typing.List[np.ndarray]:
 
+        try:
+            shape = tuple(len(player.strategies) for player in self.players)
+        except RuntimeError as err:
+            raise ValueError(
+                "No players and/or strategies have been initialised in the Game"
+                ) from err
+
         if self.is_tree:
             raise UndefinedOperationError(
                 "Operation only defined for games with a strategic representation"
                 )
 
-        shape = tuple(len(player.strategies) for player in self.players)
         num_players = len(self.players)
         payoffs = [np.zeros(shape) for p in range(num_players)]
         for profile in itertools.product(*(range(s) for s in shape)):

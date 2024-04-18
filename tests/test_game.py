@@ -5,6 +5,24 @@ import pytest
 from . import games
 
 
+def test_from_empty_array_to_array():
+    game = gbt.Game.from_arrays([])
+    a = game.to_arrays()
+    assert len(a) == 1
+    assert a[0].size == 0
+
+
+def test_empty_game_to_array():
+    game = gbt.Game.new_table([])
+    assert game.to_arrays() == []
+
+
+def test_uninitialised_game_to_array():
+    game = gbt.Game()
+    with pytest.raises(RuntimeError):
+        _ = game.to_arrays()
+
+
 def test_ext_form_to_arrays():
     game = gbt.Game.new_tree()
     with pytest.raises(ValueError):
