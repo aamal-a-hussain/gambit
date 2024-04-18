@@ -5,6 +5,25 @@ import pytest
 from . import games
 
 
+def test_mixed_outcome_to_array():
+    g = gbt.Game.new_table([2, 2])
+    g.outcomes[0][g.players[0]] = "1/4"
+    g.outcomes[0][g.players[1]] = 0.25
+    g.outcomes[1][g.players[0]] = 5
+    g.outcomes[1][g.players[1]] = 0.
+    g.outcomes[2][g.players[0]] = 0
+    g.outcomes[2][g.players[1]] = 5/1
+    g.outcomes[3][g.players[0]] = "3.14159265"
+    g.outcomes[3][g.players[1]] = 3
+
+    A, B = g.to_arrays()
+    A_true = np.array([[0.25, 0.], [5., 3.14159265]])
+    B_true = np.array([[0.25, 5.], [0., 3.]])
+
+    assert np.all(A_true == A)
+    assert np.all(B_true == B)
+
+
 def test_from_empty_array_to_array():
     game = gbt.Game.from_arrays([])
     a = game.to_arrays()
