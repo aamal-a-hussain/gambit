@@ -976,7 +976,7 @@ class Game:
         UndefinedOperationError
             If the game is in extensive form representation
 
-        ValueError
+        RuntimeError
             If no players have been initialised, or at least
             one player has no initialised strategies
 
@@ -987,7 +987,7 @@ class Game:
         try:
             shape = tuple(len(player.strategies) for player in self.players)
         except RuntimeError as err:
-            raise ValueError(
+            raise RuntimeError(
                 "No players and/or strategies have been initialised in the game"
                 ) from err
 
